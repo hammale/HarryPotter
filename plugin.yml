@@ -1,0 +1,8 @@
+name: Quidditch
+version: 1.0
+author: hammale
+main: me.hammale.hp.HarryPotter
+depend: [Spout]
+commands:
+  test:
+    description: test
