@@ -1,0 +1,16 @@
+SPEED CONFIGABLE
+
+Max per team: 7
+Auto matches configable time limit, manualy end when snitch is caught
+
+/quidditch set <team1> <team2>
+/quidditch join
+/quidditch <name <position>
+
+Seeker-can only catch snitch, fastest, only 1
+Chaser-Can catch quaffle
+Keeper-Guards in cuboid, only 1
+
+Snitch-150,ends game, 1
+Quaffle-In hoop 10 points, only 1
+Bludger-defualt 2, configable
