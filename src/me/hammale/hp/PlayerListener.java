@@ -7,6 +7,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
@@ -18,6 +20,26 @@ public class PlayerListener implements Listener {
 	
 	public PlayerListener(HarryPotter plugin){
 		this.plugin = plugin;
+	}
+	
+	@EventHandler
+	public void onBlockPlace(BlockPlaceEvent e){
+		Player p = e.getPlayer();
+		if(p.getName().equalsIgnoreCase(plugin.greenGoal)){
+			plugin.greenGoals.add(e.getBlock().getLocation());
+		}else if(p.getName().equalsIgnoreCase(plugin.blueGoal)){
+			plugin.blueGoals.add(e.getBlock().getLocation());
+		}
+	}
+	
+	@EventHandler
+	public void onBlockBreak(BlockBreakEvent e){
+		Player p = e.getPlayer();
+		if(p.getName().equalsIgnoreCase(plugin.greenGoal) && plugin.greenGoals.contains(e.getBlock().getLocation())){
+			plugin.greenGoals.remove(e.getBlock().getLocation());
+		}else if(p.getName().equalsIgnoreCase(plugin.blueGoal) && plugin.blueGoals.contains(e.getBlock().getLocation())){
+			plugin.blueGoals.remove(e.getBlock().getLocation());
+		}
 	}
 	
 	@EventHandler

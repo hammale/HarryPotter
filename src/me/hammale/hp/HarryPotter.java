@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.getspout.spoutapi.SpoutManager;
+import org.getspout.spoutapi.inventory.SpoutItemStack;
 
 public class HarryPotter extends JavaPlugin {
 	
@@ -24,7 +25,7 @@ public class HarryPotter extends JavaPlugin {
 	Cuboid greenKeeper = new Cuboid();
 	Cuboid blueKeeper = new Cuboid();
 	boolean running;
-	String arenaSelect, keeperSelect;
+	String arenaSelect, keeperSelect, greenGoal, blueGoal;
 	
 	public HashSet<Location> greenGoals = new HashSet<Location>();
 	public HashSet<Location> blueGoals = new HashSet<Location>();
@@ -66,22 +67,48 @@ public class HarryPotter extends JavaPlugin {
 
 	}
 	
-	public boolean onCommand(CommandSender sender, Command cmd, String lbl,
-			String[] args) {
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		sender.sendMessage("-1");
 		if(sender instanceof Player){
 			Player p = (Player) sender;
-			if(cmd.getName().equalsIgnoreCase("quidditch")){
-				if(args.length == 1){
-					if(args[0].equalsIgnoreCase("arena") && p.isOp()){
-						p.getInventory().setItemInHand(new ItemStack(Material.STICK, 1));
-						arenaSelect = p.getName();
-						p.sendMessage("Use stick to select arena cuboid.");
-					}else if(args[0].equalsIgnoreCase("keeper")){
-						p.getInventory().setItemInHand(new ItemStack(Material.STICK, 1));
-						keeperSelect = p.getName();
-						p.sendMessage("Use stick to select first keeper cuboid.");
-					}else if(args[0].equalsIgnoreCase("keeper")){
-						
+			p.sendMessage("0");
+			if(cmd.getName().equalsIgnoreCase("test")){
+				p.sendMessage("1");
+				if(args.length == 2){
+					p.sendMessage("2");
+					if(args[0].equalsIgnoreCase("set")  && p.isOp()){
+						p.sendMessage("3");
+						if(args[1].equalsIgnoreCase("arena")){
+							p.sendMessage("4");
+							p.getInventory().setItemInHand(new ItemStack(Material.STICK, 1));
+							arenaSelect = p.getName();
+							p.sendMessage("Use stick to select arena cuboid.");
+						}else if(args[1].equalsIgnoreCase("keeper")){
+							p.getInventory().setItemInHand(new ItemStack(Material.STICK, 1));
+							keeperSelect = p.getName();
+							p.sendMessage("Use stick to select first keeper cuboid.");
+						}else if(args[1].equalsIgnoreCase("goal")){
+							if(greenGoal == null){
+								p.getInventory().setItemInHand(new SpoutItemStack(selectorGreen, 64));
+								p.sendMessage("Set first goal then type /quidditch set goal");
+								greenGoal = p.getName();
+							}else if(greenGoal != null && blueGoal == null){
+								greenGoal = null;
+								for(Location l : greenGoals){
+									l.getBlock().setTypeId(0);
+								}
+								p.getInventory().setItemInHand(new SpoutItemStack(selectorGreen, 64));
+								p.sendMessage("Set second goal then type /quidditch set goal");
+								blueGoal = p.getName();
+							}else if(greenGoal != null && blueGoal != null){
+								blueGoal = null;
+								for(Location l : blueGoals){
+									l.getBlock().setTypeId(0);
+								}
+								p.getInventory().setItemInHand(new ItemStack(Material.AIR, 1));
+								p.sendMessage("All goals set.");
+							}
+						}
 					}
 				}
 			}

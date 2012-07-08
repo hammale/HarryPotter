@@ -4,5 +4,5 @@ author: hammale
 main: me.hammale.hp.HarryPotter
 depend: [Spout]
 commands:
-  quidditch:
+  test:
     description: Quidditch
