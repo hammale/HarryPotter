@@ -13,6 +13,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.getspout.spoutapi.SpoutManager;
 import org.getspout.spoutapi.inventory.SpoutItemStack;
 
+import com.massivecraft.factions.FPlayer;
+import com.massivecraft.factions.FPlayers;
+
 public class HarryPotter extends JavaPlugin {
 	
 	CustomItem snitch;
@@ -68,18 +71,12 @@ public class HarryPotter extends JavaPlugin {
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		sender.sendMessage("-1");
 		if(sender instanceof Player){
 			Player p = (Player) sender;
-			p.sendMessage("0");
 			if(cmd.getName().equalsIgnoreCase("test")){
-				p.sendMessage("1");
 				if(args.length == 2){
-					p.sendMessage("2");
 					if(args[0].equalsIgnoreCase("set")  && p.isOp()){
-						p.sendMessage("3");
 						if(args[1].equalsIgnoreCase("arena")){
-							p.sendMessage("4");
 							p.getInventory().setItemInHand(new ItemStack(Material.STICK, 1));
 							arenaSelect = p.getName();
 							p.sendMessage("Use stick to select arena cuboid.");
@@ -109,6 +106,11 @@ public class HarryPotter extends JavaPlugin {
 								p.sendMessage("All goals set.");
 							}
 						}
+					}
+				}else if(args.length == 1){
+					if(args[0].equalsIgnoreCase("join")){
+						FPlayer fp = FPlayers.i.get((Player) sender);
+						fp.getFaction().getId();
 					}
 				}
 			}
