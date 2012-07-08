@@ -4,16 +4,17 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 
 public class Cuboid {
     private Location a, b;
 
-    public Cuboid(Location a, Location b) {
-        this.a = a;
-        this.b = b;
+    public Cuboid() {
     }
-
+    
+    public boolean isReady(){
+    	return a != null && b != null;
+    }
+    
     public void setA(Location a) {
         this.a = a;
     }
@@ -67,17 +68,6 @@ public class Cuboid {
                 && location.getBlockZ() >= this.getMinZ()
                 && location.getBlockZ() <= this.getMaxZ();
     }
-
-    public boolean isInCuboid(Player p) {
-        return p.getWorld() == this.getWorld()
-                && p.getLocation().getBlockX() >= this.getMinX()
-                && p.getLocation().getBlockX() <= this.getMaxX()
-                && p.getLocation().getBlockX() >= this.getMinY()
-                && p.getLocation().getBlockX() <= this.getMaxY()
-                && p.getLocation().getBlockX() >= this.getMinZ()
-                && p.getLocation().getBlockX() <= this.getMaxZ();
-    }
-
     public boolean isInCuboid(Entity e) {
         return e.getWorld() == this.getWorld()
                 && e.getLocation().getBlockX() >= this.getMinX()

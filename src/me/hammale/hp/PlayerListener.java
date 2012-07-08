@@ -1,5 +1,6 @@
 package me.hammale.hp;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -32,11 +33,33 @@ public class PlayerListener implements Listener {
 					i.setVelocity(p.getLocation().getDirection().normalize().add(new Vector(0,.5,0)));
 					i.setFallDistance(0.0F);
 				}
-			}else if(p.getItemInHand().getType() == Material.STICK && p.isOp()){
-				if(plugin.cuboid == null){
-					plugin.cuboid.setA(p.getLocation());
+			}else if(p.getItemInHand().getType() == Material.STICK && plugin.arenaSelect != null && p.getName().equalsIgnoreCase(plugin.arenaSelect)){
+				if(plugin.arena.getA() == null && plugin.arena.getB() == null){
+					plugin.arena.setA(p.getLocation());
+					p.sendMessage(ChatColor.GREEN + "First position set!");
+				}else if(plugin.arena.getA() != null && plugin.arena.getB() == null){
+					plugin.arena.setB(p.getLocation());
+					p.sendMessage(ChatColor.GREEN + "Second position set! Arena set.");
+					plugin.arenaSelect = null;
+				}
+			}else if(p.getItemInHand().getType() == Material.STICK && plugin.keeperSelect != null && p.getName().equalsIgnoreCase(plugin.keeperSelect)){
+				if(!plugin.greenKeeper.isReady()){
+					if(plugin.greenKeeper.getA() == null && plugin.greenKeeper.getB() == null){
+						plugin.greenKeeper.setA(p.getLocation());
+						p.sendMessage(ChatColor.GREEN + "First position set!");
+					}else if(plugin.greenKeeper.getA() != null && plugin.greenKeeper.getB() == null){
+						plugin.greenKeeper.setB(p.getLocation());
+						p.sendMessage(ChatColor.GREEN + "Second position set! Select second keeper cuboid.");
+					}
 				}else{
-					plugin.cuboid.setB(p.getLocation());
+					if(plugin.blueKeeper.getA() == null && plugin.blueKeeper.getB() == null){
+						plugin.blueKeeper.setA(p.getLocation());
+						p.sendMessage(ChatColor.GREEN + "First position set!");
+					}else if(plugin.blueKeeper.getA() != null && plugin.blueKeeper.getB() == null){
+						plugin.blueKeeper.setB(p.getLocation());
+						p.sendMessage(ChatColor.GREEN + "Second position set! Keeper cuboid's set.");
+						plugin.keeperSelect = null;
+					}	
 				}
 			}
 
