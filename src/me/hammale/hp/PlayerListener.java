@@ -12,6 +12,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+import org.getspout.spout.block.SpoutCraftBlock;
 import org.getspout.spoutapi.inventory.SpoutItemStack;
 
 public class PlayerListener implements Listener {
@@ -25,10 +26,13 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent e){
 		Player p = e.getPlayer();
-		if(p.getName().equalsIgnoreCase(plugin.greenGoal)){
-			plugin.greenGoals.add(e.getBlock().getLocation());
-		}else if(p.getName().equalsIgnoreCase(plugin.blueGoal)){
-			plugin.blueGoals.add(e.getBlock().getLocation());
+		SpoutCraftBlock sb = (SpoutCraftBlock) e.getBlock();
+		if(sb != null && sb.isCustomBlock()){
+			if(p.getName().equalsIgnoreCase(plugin.greenGoal) && sb.getName().equalsIgnoreCase("Green Selector")){
+				plugin.greenGoals.add(e.getBlock().getLocation());
+			}else if(p.getName().equalsIgnoreCase(plugin.blueGoal) && sb.getName().equalsIgnoreCase("Blue Selector")){
+				plugin.blueGoals.add(e.getBlock().getLocation());
+			}
 		}
 	}
 	

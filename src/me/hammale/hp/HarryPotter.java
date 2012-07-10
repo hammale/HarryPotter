@@ -1,8 +1,10 @@
 package me.hammale.hp;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -12,10 +14,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.getspout.spoutapi.SpoutManager;
 import org.getspout.spoutapi.inventory.SpoutItemStack;
-
-import com.massivecraft.factions.FPlayer;
-import com.massivecraft.factions.FPlayers;
-
 public class HarryPotter extends JavaPlugin {
 	
 	CustomItem snitch;
@@ -25,13 +23,21 @@ public class HarryPotter extends JavaPlugin {
 	CustomBlock selectorGreen;
 	CustomBlock selectorBlue;
 	Cuboid arena = new Cuboid();
+	Team greenTeam, blueTeam;
 	Cuboid greenKeeper = new Cuboid();
 	Cuboid blueKeeper = new Cuboid();
 	boolean running;
 	String arenaSelect, keeperSelect, greenGoal, blueGoal;
 	
+	int greenScore, blueScore;
+	
+	public ArrayList<GamePlayer> greenPlayers = new ArrayList<GamePlayer>();
+	public ArrayList<GamePlayer> bluePlayers = new ArrayList<GamePlayer>();
+	
 	public HashSet<Location> greenGoals = new HashSet<Location>();
 	public HashSet<Location> blueGoals = new HashSet<Location>();
+	
+	public HashMap<String,ItemStack[]> invs = new HashMap<String,ItemStack[]>();
 	
 	public ArrayList<CustomItem> bludgers = new ArrayList<CustomItem>();
 	
@@ -71,9 +77,10 @@ public class HarryPotter extends JavaPlugin {
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		sender.sendMessage(cmd.getName());
 		if(sender instanceof Player){
 			Player p = (Player) sender;
-			if(cmd.getName().equalsIgnoreCase("test")){
+			if(cmd.getName().equalsIgnoreCase("quidditch")){
 				if(args.length == 2){
 					if(args[0].equalsIgnoreCase("set")  && p.isOp()){
 						if(args[1].equalsIgnoreCase("arena")){
@@ -86,7 +93,7 @@ public class HarryPotter extends JavaPlugin {
 							p.sendMessage("Use stick to select first keeper cuboid.");
 						}else if(args[1].equalsIgnoreCase("goal")){
 							if(greenGoal == null){
-								p.getInventory().setItemInHand(new SpoutItemStack(selectorGreen, 64));
+								p.getInventory().setItemInHand(new SpoutItemStack(selectorGreen, 1));
 								p.sendMessage("Set first goal then type /quidditch set goal");
 								greenGoal = p.getName();
 							}else if(greenGoal != null && blueGoal == null){
@@ -94,7 +101,7 @@ public class HarryPotter extends JavaPlugin {
 								for(Location l : greenGoals){
 									l.getBlock().setTypeId(0);
 								}
-								p.getInventory().setItemInHand(new SpoutItemStack(selectorGreen, 64));
+								p.getInventory().setItemInHand(new SpoutItemStack(selectorBlue, 1));
 								p.sendMessage("Set second goal then type /quidditch set goal");
 								blueGoal = p.getName();
 							}else if(greenGoal != null && blueGoal != null){
@@ -109,13 +116,72 @@ public class HarryPotter extends JavaPlugin {
 					}
 				}else if(args.length == 1){
 					if(args[0].equalsIgnoreCase("join")){
-						FPlayer fp = FPlayers.i.get((Player) sender);
-						fp.getFaction().getId();
+//						FPlayer fp = FPlayers.i.get((Player) sender);
+//						fp.getFaction().getId();
+						if(running){
+							if(greenPlayers.size() >= 7){
+								p.sendMessage(ChatColor.RED + "Sorry your team is full!");
+								return true;
+							}
+							p.getInventory().addItem(new SpoutItemStack(broomstick, 1));
+							GamePlayer gp = null;
+							if(hasSeeker(greenPlayers)){
+								p.teleport(arena.getCenter());
+								gp = new GamePlayer(p.getName(), Team.GRYFFINDOR, Position.SEEKER);							
+								p.sendMessage(ChatColor.BLUE + "You are now a seeker! Best of luck!");
+							}else if(hasKeeper(greenPlayers)){
+								p.teleport(greenKeeper.getCenter());
+								gp = new GamePlayer(p.getName(), Team.GRYFFINDOR, Position.KEEPER);
+								p.sendMessage(ChatColor.BLUE + "You are now a keeper! Best of luck!");
+							}else{
+								p.teleport(arena.getCenter());
+								gp = new GamePlayer(p.getName(), Team.GRYFFINDOR, Position.CHASER);				
+								p.sendMessage(ChatColor.BLUE + "You are now a chaser! Best of luck!");
+							}
+							saveInv(gp);
+							greenPlayers.add(gp);
+						}
 					}
 				}
 			}
 		}
 		return true;
+	}
+	
+	public void saveInv(GamePlayer gp) {
+		ItemStack[] is = getServer().getPlayer(gp.getName()).getInventory().getContents();
+		invs.put(gp.getName(), is);
+	}
+	
+	public void restoreInv(GamePlayer gp) {
+		Player p = getServer().getPlayer(gp.getName());
+		if(p != null){
+			p.getInventory().clear();
+			for(ItemStack is : invs.get(gp.getName())){
+				if(is != null){
+					p.getInventory().addItem(is);
+				}
+			}
+			invs.remove(gp.getName());
+		}
+	}
+	
+	public boolean hasSeeker(ArrayList<GamePlayer> players){
+		for(GamePlayer gp : players){
+			if(gp.getPosition() == Position.SEEKER){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean hasKeeper(ArrayList<GamePlayer> players){
+		for(GamePlayer gp : players){
+			if(gp.getPosition() == Position.KEEPER){
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }

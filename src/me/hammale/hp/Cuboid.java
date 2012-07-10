@@ -15,6 +15,17 @@ public class Cuboid {
     	return a != null && b != null;
     }
     
+	public Location getCenter() {
+		return new Location(this.a.getWorld(),
+				(this.a.getBlockX() + this.b.getBlockX()) / 2D,
+				(this.a.getBlockY() + this.b.getBlockY()) / 2D,
+				(this.a.getBlockZ() + this.b.getBlockZ()) / 2D);
+	}
+	
+	public Block getCenterBlock(){
+		return getWorld().getBlockAt(getCenter());
+	}
+    
     public void setA(Location a) {
         this.a = a;
     }

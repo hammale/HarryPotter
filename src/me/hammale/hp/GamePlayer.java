@@ -12,10 +12,10 @@ public class GamePlayer {
 	Position position;
 	PlayerInventory pi;
 	
-	public GamePlayer(String name, String team, String position){
+	public GamePlayer(String name, Team team, Position position){
 		this.name = name;
-		this.team = Team.valueOf(team.toUpperCase());
-		this.position = Position.valueOf(team.toUpperCase());
+		this.team = team;
+		this.position = position;
 	}
 	
 	public Team getTeam(){

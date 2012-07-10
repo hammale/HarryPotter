@@ -2,7 +2,8 @@ name: Quidditch
 version: 1.0
 author: hammale
 main: me.hammale.hp.HarryPotter
-depend: [Spout, Factions]
+depend: [Spout]
 commands:
-  test:
+  quidditch:
     description: Quidditch
+    usage: |
