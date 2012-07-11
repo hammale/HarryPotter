@@ -35,7 +35,7 @@ public class GameTask implements Runnable {
 			if(ran.nextInt(1) == 0){
 				z = z*-1;
 			}
-			snitch.setVelocity(new Vector(x,y,z));
+			snitch.setVelocity(new Vector(.1,.1,.1));
 			
 			x = ran.nextInt(9) / 10;
 			y = ran.nextInt(9) / 10;

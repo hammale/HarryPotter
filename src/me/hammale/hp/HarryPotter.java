@@ -104,7 +104,7 @@ public class HarryPotter extends JavaPlugin {
 								p.sendMessage("Set first goal then type /quidditch set goal");
 								greenGoal = p.getName();
 							}else if(greenGoal != null && blueGoal == null){
-								greenGoal = null;
+								greenGoal = "done";
 								for(Location l : greenGoals){
 									l.getBlock().setTypeId(0);
 								}
@@ -112,7 +112,6 @@ public class HarryPotter extends JavaPlugin {
 								p.sendMessage("Set second goal then type /quidditch set goal");
 								blueGoal = p.getName();
 							}else if(greenGoal != null && blueGoal != null){
-								blueGoal = null;
 								for(Location l : blueGoals){
 									l.getBlock().setTypeId(0);
 								}
@@ -132,11 +131,11 @@ public class HarryPotter extends JavaPlugin {
 							}
 							p.getInventory().addItem(new SpoutItemStack(broomstick, 1));
 							GamePlayer gp = null;
-							if(hasSeeker(greenPlayers)){
+							if(!hasSeeker(greenPlayers)){
 								p.teleport(arena.getCenter());
 								gp = new GamePlayer(p.getName(), Team.GRYFFINDOR, Position.SEEKER);							
 								p.sendMessage(ChatColor.BLUE + "You are now a seeker! Best of luck!");
-							}else if(hasKeeper(greenPlayers)){
+							}else if(!hasKeeper(greenPlayers)){
 								p.teleport(greenKeeper.getCenter());
 								gp = new GamePlayer(p.getName(), Team.GRYFFINDOR, Position.KEEPER);
 								p.sendMessage(ChatColor.BLUE + "You are now a keeper! Best of luck!");
