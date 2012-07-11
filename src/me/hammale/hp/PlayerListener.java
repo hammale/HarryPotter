@@ -1,5 +1,7 @@
 package me.hammale.hp;
 
+import me.hammale.hp.HarryPotter.Position;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Item;
@@ -9,10 +11,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-import org.getspout.spout.block.SpoutCraftBlock;
 import org.getspout.spoutapi.inventory.SpoutItemStack;
 
 public class PlayerListener implements Listener {
@@ -24,13 +28,89 @@ public class PlayerListener implements Listener {
 	}
 	
 	@EventHandler
+	public void onItemPickup(PlayerPickupItemEvent e){
+		if(plugin.running){
+			Player p = e.getPlayer();
+			for(GamePlayer gp : plugin.greenPlayers){
+				if(p.getName().equalsIgnoreCase(gp.getName())){
+					if(e.getItem() == plugin.snitch){
+						e.setCancelled(true);
+						if(gp.getTeam() == plugin.greenTeam){
+							plugin.greenScore += 150;
+						}else if(gp.getTeam() == plugin.blueTeam){
+							plugin.blueScore += 150;
+						}
+						plugin.endGame();
+					}else if(e.getItem() == plugin.bludger){
+						e.setCancelled(true);
+						p.setHealth(p.getHealth()-3);
+					}
+				}
+			}
+		}
+	}
+	
+	@EventHandler
+	public void onItemDespawn(ItemDespawnEvent e){
+		if(e.getEntity() == plugin.snitch
+				|| e.getEntity() == plugin.quaffle
+				|| e.getEntity() == plugin.bludger){
+			e.setCancelled(true);
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerMove(PlayerMoveEvent e){
+		if(plugin.running){
+			Player p = e.getPlayer();
+			for(GamePlayer gp : plugin.greenPlayers){
+				if(gp.getName().equalsIgnoreCase(p.getName())){
+					if(gp.getPosition() == Position.KEEPER){
+						if(!plugin.greenKeeper.isInCuboid(p)){
+							e.setCancelled(true);
+							e.setTo(e.getFrom());
+							return;
+						}
+					}else{
+						if(!plugin.arena.isInCuboid(p)){
+							e.setCancelled(true);
+							e.setTo(e.getFrom());
+							return;
+						}
+					}
+				}
+			}
+			for(GamePlayer gp : plugin.bluePlayers){
+				if(gp.getName().equalsIgnoreCase(p.getName())){
+					if(gp.getPosition() == Position.KEEPER){
+						if(!plugin.blueKeeper.isInCuboid(p)){
+							e.setCancelled(true);
+							e.setTo(e.getFrom());
+							return;
+						}
+					}else{
+						if(!plugin.arena.isInCuboid(p)){
+							e.setCancelled(true);
+							e.setTo(e.getFrom());
+							return;
+						}
+					}
+				}
+			}
+			if(plugin.arena.isInCuboid(p)){
+				e.setCancelled(true);
+				p.sendMessage(ChatColor.RED + "Stay out of the arena while a game is in play!");
+			}
+		}
+	}
+	
+	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent e){
 		Player p = e.getPlayer();
-		SpoutCraftBlock sb = (SpoutCraftBlock) e.getBlock();
-		if(sb != null && sb.isCustomBlock()){
-			if(p.getName().equalsIgnoreCase(plugin.greenGoal) && sb.getName().equalsIgnoreCase("Green Selector")){
+		if(e.getBlock().getType() == Material.SPONGE){
+			if(p.getName().equalsIgnoreCase(plugin.greenGoal)){
 				plugin.greenGoals.add(e.getBlock().getLocation());
-			}else if(p.getName().equalsIgnoreCase(plugin.blueGoal) && sb.getName().equalsIgnoreCase("Blue Selector")){
+			}else if(p.getName().equalsIgnoreCase(plugin.blueGoal)){
 				plugin.blueGoals.add(e.getBlock().getLocation());
 			}
 		}

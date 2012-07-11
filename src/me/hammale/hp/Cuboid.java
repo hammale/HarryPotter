@@ -12,7 +12,10 @@ public class Cuboid {
     }
     
     public boolean isReady(){
-    	return a != null && b != null;
+    	if(a != null && b != null){
+    		return true;
+    	}
+    	return false;
     }
     
 	public Location getCenter() {

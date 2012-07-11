@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,8 +27,13 @@ public class HarryPotter extends JavaPlugin {
 	Team greenTeam, blueTeam;
 	Cuboid greenKeeper = new Cuboid();
 	Cuboid blueKeeper = new Cuboid();
+	
+	int bludgerCount;
+	
 	boolean running;
 	String arenaSelect, keeperSelect, greenGoal, blueGoal;
+	
+	GameTask task = new GameTask(this);
 	
 	int greenScore, blueScore;
 	
@@ -39,7 +45,7 @@ public class HarryPotter extends JavaPlugin {
 	
 	public HashMap<String,ItemStack[]> invs = new HashMap<String,ItemStack[]>();
 	
-	public ArrayList<CustomItem> bludgers = new ArrayList<CustomItem>();
+	public ArrayList<Item> bludgers = new ArrayList<Item>();
 	
 	public enum Team {
 		GRYFFINDOR, HUFFLEPUFF, RAVENCLAW, SLYTHERIN
@@ -72,7 +78,8 @@ public class HarryPotter extends JavaPlugin {
 		selectorGreen = new CustomBlock(this, "Green Selector", "http://i.imgur.com/ZqztO.png");
 		selectorBlue = new CustomBlock(this, "Blue Selector", "http://i.imgur.com/oa3Ua.png");
 		getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
-		getServer().getScheduler().scheduleSyncRepeatingTask(this,new GameTask(this),0,1);
+		getServer().getScheduler().scheduleSyncRepeatingTask(this,task,0,1);
+		bludgerCount = 2;
 
 	}
 	
@@ -93,7 +100,7 @@ public class HarryPotter extends JavaPlugin {
 							p.sendMessage("Use stick to select first keeper cuboid.");
 						}else if(args[1].equalsIgnoreCase("goal")){
 							if(greenGoal == null){
-								p.getInventory().setItemInHand(new SpoutItemStack(selectorGreen, 1));
+								p.getInventory().setItemInHand(new ItemStack(Material.SPONGE, 1));
 								p.sendMessage("Set first goal then type /quidditch set goal");
 								greenGoal = p.getName();
 							}else if(greenGoal != null && blueGoal == null){
@@ -101,7 +108,7 @@ public class HarryPotter extends JavaPlugin {
 								for(Location l : greenGoals){
 									l.getBlock().setTypeId(0);
 								}
-								p.getInventory().setItemInHand(new SpoutItemStack(selectorBlue, 1));
+								p.getInventory().setItemInHand(new ItemStack(Material.SPONGE, 1));
 								p.sendMessage("Set second goal then type /quidditch set goal");
 								blueGoal = p.getName();
 							}else if(greenGoal != null && blueGoal != null){
@@ -141,11 +148,30 @@ public class HarryPotter extends JavaPlugin {
 							saveInv(gp);
 							greenPlayers.add(gp);
 						}
+					}else if(args[0].equalsIgnoreCase("start")){
+						startGame(p);
 					}
 				}
 			}
 		}
 		return true;
+	}
+	
+	public void startGame(Player p){
+		if(arena.isReady()
+				&& greenKeeper.isReady()
+				&& blueKeeper.isReady()
+				&& greenGoals == null
+				&& blueGoals == null){
+			p.sendMessage(ChatColor.RED + "Not all required regions defined! Cannot start game!");
+			return;
+		}
+		task.snitch = arena.getWorld().dropItemNaturally(arena.getCenter(), new SpoutItemStack(snitch));
+		task.quaffle = arena.getWorld().dropItemNaturally(arena.getCenter(), new SpoutItemStack(quaffle));
+		for(int i=1;i<=bludgerCount;i++){
+			bludgers.add(arena.getWorld().dropItemNaturally(arena.getCenter(), new SpoutItemStack(bludger)));
+		}
+		running = true;
 	}
 	
 	public void saveInv(GamePlayer gp) {
@@ -182,6 +208,10 @@ public class HarryPotter extends JavaPlugin {
 			}
 		}
 		return false;
+	}
+
+	public void endGame() {
+		// TODO
 	}
 	
 }
