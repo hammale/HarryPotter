@@ -86,19 +86,19 @@ public class Cuboid {
         return e.getWorld() == this.getWorld()
                 && e.getLocation().getBlockX() >= this.getMinX()
                 && e.getLocation().getBlockX() <= this.getMaxX()
-                && e.getLocation().getBlockX() >= this.getMinY()
-                && e.getLocation().getBlockX() <= this.getMaxY()
-                && e.getLocation().getBlockX() >= this.getMinZ()
-                && e.getLocation().getBlockX() <= this.getMaxZ();
+                && e.getLocation().getBlockY() >= this.getMinY()
+                && e.getLocation().getBlockY() <= this.getMaxY()
+                && e.getLocation().getBlockZ() >= this.getMinZ()
+                && e.getLocation().getBlockZ() <= this.getMaxZ();
     }
 
     public boolean isInCuboid(Block b) {
         return b.getWorld() == this.getWorld()
                 && b.getLocation().getBlockX() >= this.getMinX()
                 && b.getLocation().getBlockX() <= this.getMaxX()
-                && b.getLocation().getBlockX() >= this.getMinY()
-                && b.getLocation().getBlockX() <= this.getMaxY()
-                && b.getLocation().getBlockX() >= this.getMinZ()
-                && b.getLocation().getBlockX() <= this.getMaxZ();
+                && b.getLocation().getBlockY() >= this.getMinY()
+                && b.getLocation().getBlockY() <= this.getMaxY()
+                && b.getLocation().getBlockZ() >= this.getMinZ()
+                && b.getLocation().getBlockZ() <= this.getMaxZ();
     }
 }

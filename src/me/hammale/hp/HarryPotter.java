@@ -9,7 +9,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -45,8 +44,6 @@ public class HarryPotter extends JavaPlugin {
 	
 	public HashMap<String,ItemStack[]> invs = new HashMap<String,ItemStack[]>();
 	
-	public ArrayList<Item> bludgers = new ArrayList<Item>();
-	
 	public enum Team {
 		GRYFFINDOR, HUFFLEPUFF, RAVENCLAW, SLYTHERIN
 	}
@@ -78,13 +75,12 @@ public class HarryPotter extends JavaPlugin {
 		selectorGreen = new CustomBlock(this, "Green Selector", "http://i.imgur.com/ZqztO.png");
 		selectorBlue = new CustomBlock(this, "Blue Selector", "http://i.imgur.com/oa3Ua.png");
 		getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
-		getServer().getScheduler().scheduleSyncRepeatingTask(this,task,0,1);
+		getServer().getScheduler().scheduleSyncRepeatingTask(this,task,0,5);
 		bludgerCount = 2;
 
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		sender.sendMessage(cmd.getName());
 		if(sender instanceof Player){
 			Player p = (Player) sender;
 			if(cmd.getName().equalsIgnoreCase("quidditch")){
@@ -125,6 +121,11 @@ public class HarryPotter extends JavaPlugin {
 //						FPlayer fp = FPlayers.i.get((Player) sender);
 //						fp.getFaction().getId();
 						if(running){
+							if(onTeam(bluePlayers, p.getName())
+									|| onTeam(greenPlayers, p.getName())){
+								p.sendMessage(ChatColor.RED + "You are already on a team!");
+								return true;
+							}
 							if(greenPlayers.size() >= 7){
 								p.sendMessage(ChatColor.RED + "Sorry your team is full!");
 								return true;
@@ -165,10 +166,10 @@ public class HarryPotter extends JavaPlugin {
 			p.sendMessage(ChatColor.RED + "Not all required regions defined! Cannot start game!");
 			return;
 		}
-		task.snitch = arena.getWorld().dropItemNaturally(arena.getCenter(), new SpoutItemStack(snitch));
-		task.quaffle = arena.getWorld().dropItemNaturally(arena.getCenter(), new SpoutItemStack(quaffle));
+		task.snitch = new GameItem(arena.getWorld().dropItemNaturally(arena.getCenter(), new SpoutItemStack(snitch)));
+		task.quaffle = new GameItem(arena.getWorld().dropItemNaturally(arena.getCenter(), new SpoutItemStack(quaffle)));
 		for(int i=1;i<=bludgerCount;i++){
-			bludgers.add(arena.getWorld().dropItemNaturally(arena.getCenter(), new SpoutItemStack(bludger)));
+			task.bludgers.add(new GameItem(arena.getWorld().dropItemNaturally(arena.getCenter(), new SpoutItemStack(bludger))));
 		}
 		running = true;
 	}
@@ -194,6 +195,15 @@ public class HarryPotter extends JavaPlugin {
 	public boolean hasSeeker(ArrayList<GamePlayer> players){
 		for(GamePlayer gp : players){
 			if(gp.getPosition() == Position.SEEKER){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean onTeam(ArrayList<GamePlayer> players, String s){
+		for(GamePlayer gp : players){
+			if(gp.getName().equalsIgnoreCase(s)){
 				return true;
 			}
 		}

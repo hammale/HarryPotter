@@ -33,7 +33,7 @@ public class PlayerListener implements Listener {
 			Player p = e.getPlayer();
 			for(GamePlayer gp : plugin.greenPlayers){
 				if(p.getName().equalsIgnoreCase(gp.getName())){
-					if(e.getItem() == plugin.snitch){
+					if(e.getItem() == plugin.task.snitch){
 						e.setCancelled(true);
 						if(gp.getTeam() == plugin.greenTeam){
 							plugin.greenScore += 150;
@@ -41,9 +41,13 @@ public class PlayerListener implements Listener {
 							plugin.blueScore += 150;
 						}
 						plugin.endGame();
-					}else if(e.getItem() == plugin.bludger){
-						e.setCancelled(true);
-						p.setHealth(p.getHealth()-3);
+						return;
+					}
+					for(GameItem i : plugin.task.bludgers){
+						if(e.getItem() == i.getItem()){
+							e.setCancelled(true);
+							p.setHealth(p.getHealth()-3);
+						}
 					}
 				}
 			}
@@ -52,10 +56,14 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler
 	public void onItemDespawn(ItemDespawnEvent e){
-		if(e.getEntity() == plugin.snitch
-				|| e.getEntity() == plugin.quaffle
-				|| e.getEntity() == plugin.bludger){
+		if(e.getEntity() == plugin.task.snitch
+				|| e.getEntity() == plugin.task.quaffle){
 			e.setCancelled(true);
+		}
+		for(GameItem i : plugin.task.bludgers){
+			if(e.getEntity() == i.getItem()){
+				e.setCancelled(true);
+			}
 		}
 	}
 	
@@ -65,41 +73,29 @@ public class PlayerListener implements Listener {
 			Player p = e.getPlayer();
 			for(GamePlayer gp : plugin.greenPlayers){
 				if(gp.getName().equalsIgnoreCase(p.getName())){
-					if(gp.getPosition() == Position.KEEPER){
-						if(!plugin.greenKeeper.isInCuboid(p)){
-							e.setCancelled(true);
-							e.setTo(e.getFrom());
-							return;
-						}
-					}else{
-						if(!plugin.arena.isInCuboid(p)){
-							e.setCancelled(true);
-							e.setTo(e.getFrom());
-							return;
-						}
+					if(gp.getPosition() == Position.KEEPER
+						&& !plugin.greenKeeper.isInCuboid(p)){
+						e.setTo(e.getFrom());
+						return;
+					}
+					if(!plugin.arena.isInCuboid(p)){
+						e.setTo(e.getFrom());
+						return;
 					}
 				}
 			}
 			for(GamePlayer gp : plugin.bluePlayers){
 				if(gp.getName().equalsIgnoreCase(p.getName())){
-					if(gp.getPosition() == Position.KEEPER){
-						if(!plugin.blueKeeper.isInCuboid(p)){
-							e.setCancelled(true);
-							e.setTo(e.getFrom());
-							return;
-						}
-					}else{
-						if(!plugin.arena.isInCuboid(p)){
-							e.setCancelled(true);
-							e.setTo(e.getFrom());
-							return;
-						}
+					if(gp.getPosition() == Position.KEEPER
+						&& !plugin.blueKeeper.isInCuboid(p)){
+						e.setTo(e.getFrom());
+						return;
+					}
+					if(!plugin.arena.isInCuboid(p)){
+						e.setTo(e.getFrom());
+						return;
 					}
 				}
-			}
-			if(plugin.arena.isInCuboid(p)){
-				e.setCancelled(true);
-				p.sendMessage(ChatColor.RED + "Stay out of the arena while a game is in play!");
 			}
 		}
 	}
@@ -141,28 +137,28 @@ public class PlayerListener implements Listener {
 				}
 			}else if(p.getItemInHand().getType() == Material.STICK && plugin.arenaSelect != null && p.getName().equalsIgnoreCase(plugin.arenaSelect)){
 				if(plugin.arena.getA() == null && plugin.arena.getB() == null){
-					plugin.arena.setA(p.getLocation());
+					plugin.arena.setA(e.getClickedBlock().getLocation());
 					p.sendMessage(ChatColor.GREEN + "First position set!");
 				}else if(plugin.arena.getA() != null && plugin.arena.getB() == null){
-					plugin.arena.setB(p.getLocation());
+					plugin.arena.setB(e.getClickedBlock().getLocation());
 					p.sendMessage(ChatColor.GREEN + "Second position set! Arena set.");
 					plugin.arenaSelect = null;
 				}
 			}else if(p.getItemInHand().getType() == Material.STICK && plugin.keeperSelect != null && p.getName().equalsIgnoreCase(plugin.keeperSelect)){
 				if(!plugin.greenKeeper.isReady()){
 					if(plugin.greenKeeper.getA() == null && plugin.greenKeeper.getB() == null){
-						plugin.greenKeeper.setA(p.getLocation());
+						plugin.greenKeeper.setA(e.getClickedBlock().getLocation());
 						p.sendMessage(ChatColor.GREEN + "First position set!");
 					}else if(plugin.greenKeeper.getA() != null && plugin.greenKeeper.getB() == null){
-						plugin.greenKeeper.setB(p.getLocation());
+						plugin.greenKeeper.setB(e.getClickedBlock().getLocation());
 						p.sendMessage(ChatColor.GREEN + "Second position set! Select second keeper cuboid.");
 					}
 				}else{
 					if(plugin.blueKeeper.getA() == null && plugin.blueKeeper.getB() == null){
-						plugin.blueKeeper.setA(p.getLocation());
+						plugin.blueKeeper.setA(e.getClickedBlock().getLocation());
 						p.sendMessage(ChatColor.GREEN + "First position set!");
 					}else if(plugin.blueKeeper.getA() != null && plugin.blueKeeper.getB() == null){
-						plugin.blueKeeper.setB(p.getLocation());
+						plugin.blueKeeper.setB(e.getClickedBlock().getLocation());
 						p.sendMessage(ChatColor.GREEN + "Second position set! Keeper cuboid's set.");
 						plugin.keeperSelect = null;
 					}	
