@@ -33,12 +33,40 @@ public class PlayerListener implements Listener {
 			Player p = e.getPlayer();
 			for(GamePlayer gp : plugin.greenPlayers){
 				if(p.getName().equalsIgnoreCase(gp.getName())){
-					if(e.getItem() == plugin.task.snitch){
+					if(e.getItem() == plugin.task.snitch.getItem()){
 						e.setCancelled(true);
 						if(gp.getTeam() == plugin.greenTeam){
 							plugin.greenScore += 150;
+							plugin.getServer().broadcastMessage(plugin.greenTeam.toString() + " has scored!");
+							plugin.showScores();
 						}else if(gp.getTeam() == plugin.blueTeam){
 							plugin.blueScore += 150;
+							plugin.getServer().broadcastMessage(plugin.blueTeam.toString() + " has scored!");
+							plugin.showScores();
+						}
+						plugin.endGame();
+						return;
+					}
+					for(GameItem i : plugin.task.bludgers){
+						if(e.getItem() == i.getItem()){
+							e.setCancelled(true);
+							p.setHealth(p.getHealth()-3);
+						}
+					}
+				}
+			}
+			for(GamePlayer gp : plugin.bluePlayers){
+				if(p.getName().equalsIgnoreCase(gp.getName())){
+					if(e.getItem() == plugin.task.snitch.getItem()){
+						e.setCancelled(true);
+						if(gp.getTeam() == plugin.greenTeam){
+							plugin.greenScore += 150;
+							plugin.getServer().broadcastMessage(plugin.greenTeam.toString() + " has scored!");
+							plugin.showScores();
+						}else if(gp.getTeam() == plugin.blueTeam){
+							plugin.blueScore += 150;
+							plugin.getServer().broadcastMessage(plugin.blueTeam.toString() + " has scored!");
+							plugin.showScores();
 						}
 						plugin.endGame();
 						return;
@@ -124,7 +152,7 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent e){
-		if(e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK){
+		if(e.getAction() == Action.RIGHT_CLICK_BLOCK){
 			Player p = e.getPlayer();
 			SpoutItemStack citem = new SpoutItemStack(p.getItemInHand());
 			if(citem.isCustomItem()){
@@ -134,6 +162,7 @@ public class PlayerListener implements Listener {
 					i.setFallDistance(0.0F);
 					i.setVelocity(p.getLocation().getDirection().normalize().add(new Vector(0,.5,0)));
 					i.setFallDistance(0.0F);
+					plugin.task.quaffle.setItem(i);
 				}
 			}else if(p.getItemInHand().getType() == Material.STICK && plugin.arenaSelect != null && p.getName().equalsIgnoreCase(plugin.arenaSelect)){
 				if(plugin.arena.getA() == null && plugin.arena.getB() == null){

@@ -1,10 +1,12 @@
 package me.hammale.hp;
 
 import java.util.ArrayList;
+
 import java.util.HashMap;
 import java.util.HashSet;
 
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -14,6 +16,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.getspout.spoutapi.SpoutManager;
 import org.getspout.spoutapi.inventory.SpoutItemStack;
+
+import com.massivecraft.factions.FPlayer;
+import com.massivecraft.factions.FPlayers;
 public class HarryPotter extends JavaPlugin {
 	
 	CustomItem snitch;
@@ -75,7 +80,7 @@ public class HarryPotter extends JavaPlugin {
 		selectorGreen = new CustomBlock(this, "Green Selector", "http://i.imgur.com/ZqztO.png");
 		selectorBlue = new CustomBlock(this, "Blue Selector", "http://i.imgur.com/oa3Ua.png");
 		getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
-		getServer().getScheduler().scheduleSyncRepeatingTask(this,task,0,5);
+		getServer().getScheduler().scheduleSyncRepeatingTask(this,task,0,1);
 		bludgerCount = 2;
 
 	}
@@ -118,38 +123,69 @@ public class HarryPotter extends JavaPlugin {
 					}
 				}else if(args.length == 1){
 					if(args[0].equalsIgnoreCase("join")){
-//						FPlayer fp = FPlayers.i.get((Player) sender);
-//						fp.getFaction().getId();
 						if(running){
+							FPlayer fp = FPlayers.i.get(p);
+							Team team = getTeamFromId(Integer.parseInt(fp.getFaction().getId()));
 							if(onTeam(bluePlayers, p.getName())
 									|| onTeam(greenPlayers, p.getName())){
 								p.sendMessage(ChatColor.RED + "You are already on a team!");
 								return true;
 							}
-							if(greenPlayers.size() >= 7){
-								p.sendMessage(ChatColor.RED + "Sorry your team is full!");
+							if(greenTeam == team){
+								if(greenPlayers.size() >= 7){
+									p.sendMessage(ChatColor.RED + "Sorry your team is full!");
+									return true;
+								}
+								p.getInventory().addItem(new SpoutItemStack(broomstick, 1));
+								GamePlayer gp = null;
+								if(!hasSeeker(greenPlayers)){
+									p.teleport(arena.getCenter());
+									gp = new GamePlayer(p.getName(), team, Position.SEEKER);							
+									p.sendMessage(ChatColor.BLUE + "You are now a seeker! Best of luck!");
+								}else if(!hasKeeper(greenPlayers)){
+									p.teleport(greenKeeper.getCenter());
+									gp = new GamePlayer(p.getName(), team, Position.KEEPER);
+									p.sendMessage(ChatColor.BLUE + "You are now a keeper! Best of luck!");
+								}else{
+									p.teleport(arena.getCenter());
+									gp = new GamePlayer(p.getName(), team, Position.CHASER);				
+									p.sendMessage(ChatColor.BLUE + "You are now a chaser! Best of luck!");
+								}
+								saveInv(gp);
+								greenPlayers.add(gp);
+								fly(gp);
+							}else if(blueTeam == team){
+								if(bluePlayers.size() >= 7){
+									p.sendMessage(ChatColor.RED + "Sorry your team is full!");
+									return true;
+								}
+								p.getInventory().addItem(new SpoutItemStack(broomstick, 1));
+								GamePlayer gp = null;
+								if(!hasSeeker(bluePlayers)){
+									p.teleport(arena.getCenter());
+									gp = new GamePlayer(p.getName(), team, Position.SEEKER);							
+									p.sendMessage(ChatColor.BLUE + "You are now a seeker! Best of luck!");
+								}else if(!hasKeeper(bluePlayers)){
+									p.teleport(blueKeeper.getCenter());
+									gp = new GamePlayer(p.getName(), team, Position.KEEPER);
+									p.sendMessage(ChatColor.BLUE + "You are now a keeper! Best of luck!");
+								}else{
+									p.teleport(arena.getCenter());
+									gp = new GamePlayer(p.getName(), team, Position.CHASER);				
+									p.sendMessage(ChatColor.BLUE + "You are now a chaser! Best of luck!");
+								}
+								saveInv(gp);
+								bluePlayers.add(gp);
+								fly(gp);
+							}else{
+								p.sendMessage(ChatColor.RED + "Sorry your team isn't playing!");
 								return true;
 							}
-							p.getInventory().addItem(new SpoutItemStack(broomstick, 1));
-							GamePlayer gp = null;
-							if(!hasSeeker(greenPlayers)){
-								p.teleport(arena.getCenter());
-								gp = new GamePlayer(p.getName(), Team.GRYFFINDOR, Position.SEEKER);							
-								p.sendMessage(ChatColor.BLUE + "You are now a seeker! Best of luck!");
-							}else if(!hasKeeper(greenPlayers)){
-								p.teleport(greenKeeper.getCenter());
-								gp = new GamePlayer(p.getName(), Team.GRYFFINDOR, Position.KEEPER);
-								p.sendMessage(ChatColor.BLUE + "You are now a keeper! Best of luck!");
-							}else{
-								p.teleport(arena.getCenter());
-								gp = new GamePlayer(p.getName(), Team.GRYFFINDOR, Position.CHASER);				
-								p.sendMessage(ChatColor.BLUE + "You are now a chaser! Best of luck!");
-							}
-							saveInv(gp);
-							greenPlayers.add(gp);
 						}
-					}else if(args[0].equalsIgnoreCase("start")){
-						startGame(p);
+					}
+				}else if(args.length == 3){
+					if(args[0].equalsIgnoreCase("start")){
+						startGame(p, args[1], args[2]);
 					}
 				}
 			}
@@ -157,12 +193,30 @@ public class HarryPotter extends JavaPlugin {
 		return true;
 	}
 	
-	public void startGame(Player p){
-		if(arena.isReady()
-				&& greenKeeper.isReady()
-				&& blueKeeper.isReady()
-				&& greenGoals == null
-				&& blueGoals == null){
+	private void fly(GamePlayer gp) {
+		Player p = getServer().getPlayer(gp.getName());
+		p.setGameMode(GameMode.SURVIVAL);
+		p.setAllowFlight(true);
+	}
+
+	public void startGame(Player p, String team1, String team2){
+		try{
+			greenTeam = Team.valueOf(team1.toUpperCase());
+		}catch(Exception e){
+			p.sendMessage(ChatColor.RED + team1 + " is not a valid team name!");
+			return;
+		}
+		try{
+			blueTeam = Team.valueOf(team2.toUpperCase());
+		}catch(Exception e){
+			p.sendMessage(ChatColor.RED + team2 + " is not a valid team name!");
+			return;
+		}	
+		if(!arena.isReady()
+				|| !greenKeeper.isReady()
+				|| !blueKeeper.isReady()
+				|| greenGoals == null
+				|| blueGoals == null){
 			p.sendMessage(ChatColor.RED + "Not all required regions defined! Cannot start game!");
 			return;
 		}
@@ -172,6 +226,7 @@ public class HarryPotter extends JavaPlugin {
 			task.bludgers.add(new GameItem(arena.getWorld().dropItemNaturally(arena.getCenter(), new SpoutItemStack(bludger))));
 		}
 		running = true;
+		p.sendMessage(ChatColor.YELLOW + team1 + " vs " + team2 + " has begun!");
 	}
 	
 	public void saveInv(GamePlayer gp) {
@@ -218,9 +273,28 @@ public class HarryPotter extends JavaPlugin {
 		}
 		return false;
 	}
-
+	
+	public Team getTeamFromId(int id){
+		if(id == 7){
+			return Team.GRYFFINDOR;
+		}else if(id == 3){
+			return Team.RAVENCLAW;
+		}else  if(id == 4){
+			return Team.HUFFLEPUFF;
+		}else if(id == 6){
+			return Team.SLYTHERIN;
+		}else{
+			return null;
+		}
+	}
+	
 	public void endGame() {
 		// TODO
+	}
+
+	public void showScores() {
+		getServer().broadcastMessage(greenTeam.toString() + ": " + greenScore);
+		getServer().broadcastMessage(blueTeam.toString() + ": " + blueScore);		
 	}
 	
 }
